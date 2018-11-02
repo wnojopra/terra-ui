@@ -25,6 +25,7 @@ import * as NotebookLauncher from 'src/pages/workspaces/workspace/notebooks/Note
 import * as TerminalLauncher from 'src/pages/workspaces/workspace/notebooks/TerminalLauncher'
 import * as Tools from 'src/pages/workspaces/workspace/Tools'
 import * as WorkflowView from 'src/pages/workspaces/workspace/tools/WorkflowView'
+import * as HexagonDemo from 'src/pages/HexagonDemo'
 
 
 const pageWrapStyle = { minHeight: '100%', display: 'flex', flexDirection: 'column', flexGrow: 1 }
@@ -51,6 +52,7 @@ const initNavPaths = () => {
   Code.addNavPaths()
   Datasets.addNavPaths()
   Showcase.addNavPaths()
+  HexagonDemo.addNavPaths()
 }
 
 export default class Router extends Component {
