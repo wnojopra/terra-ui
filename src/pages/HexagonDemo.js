@@ -18,8 +18,8 @@ const HexagonLayout = pure(({ size, margin, backgroundColor, borderRadius=0, chi
   const y2 = size*root3/2
   const height = size*root3*2/3
 
-  const shortRadAdj = borderRadius/2
-  const longRadAdj = borderRadius*root3/2
+  const midYadj = borderRadius*root3/3
+  const topYadj = borderRadius*root3*2/3
 
   return h(AutoSizer, { disableHeight: true }, [
     ({ width }) => {
@@ -44,15 +44,15 @@ const HexagonLayout = pure(({ size, margin, backgroundColor, borderRadius=0, chi
           }
         }, [
           polygon({
-            points: `${longRadAdj},${y1+shortRadAdj}
-                     ${size/2},${borderRadius}
-                     ${size-longRadAdj},${y1+shortRadAdj}
-                     ${size-longRadAdj},${y2-shortRadAdj}
-                     ${size/2},${height-borderRadius}
-                     ${longRadAdj},${y2-shortRadAdj}`,
+            points: `${borderRadius},${y1+midYadj}
+                     ${size/2},${topYadj}
+                     ${size-borderRadius},${y1+midYadj}
+                     ${size-borderRadius},${y2-midYadj}
+                     ${size/2},${height-topYadj}
+                     ${borderRadius},${y2-midYadj}`,
             fill: backgroundColor,
             stroke: backgroundColor,
-            strokeWidth: borderRadius*root3,
+            strokeWidth: borderRadius*2,
             strokeLinejoin: 'round'
           })
         ]),
