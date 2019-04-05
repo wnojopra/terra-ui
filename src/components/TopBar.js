@@ -284,7 +284,7 @@ export default _.flow(
             style: styles.nav.supportItem,
             as: 'a',
             hover: { backgroundColor: colors.gray[3] },
-            href: 'https://support.terra.bio/hc/en-us',
+            href: 'https://support.terra.bio/',
             target: '_blank',
             onClick: () => this.hideNav()
           }, [
@@ -304,7 +304,7 @@ export default _.flow(
             style: styles.nav.supportItem,
             as: 'a',
             hover: { backgroundColor: colors.gray[3] },
-            href: 'https://support.terra.bio/hc/en-us/community/topics/360000500452-Feature-Requests',
+            href: 'https://support.terra.bio/community/topics/360000500452-Feature-Requests',
             target: '_blank',
             onClick: () => this.hideNav()
           }, [
@@ -324,7 +324,7 @@ export default _.flow(
             style: styles.nav.supportItem,
             as: 'a',
             hover: { backgroundColor: colors.gray[3] },
-            href: 'https://support.terra.bio/hc/en-us/community/topics/360000500432-General-Discussion',
+            href: 'https://support.terra.bio/community/topics/360000500432-General-Discussion',
             target: '_blank',
             onClick: () => this.hideNav()
           }, [
