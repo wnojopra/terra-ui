@@ -2,7 +2,7 @@ import _ from 'lodash/fp'
 import { createRef, Fragment } from 'react'
 import { div, h } from 'react-hyperscript-helpers'
 import { AutoSizer } from 'react-virtualized'
-import { Checkbox, Clickable, linkButton, MenuButton, RadioButton, spinnerOverlay } from 'src/components/common'
+import { buttonPrimary, Checkbox, Clickable, linkButton, MenuButton, RadioButton, spinnerOverlay } from 'src/components/common'
 import { icon } from 'src/components/icons'
 import Modal from 'src/components/Modal'
 import PopupTrigger from 'src/components/PopupTrigger'
@@ -67,7 +67,8 @@ export default ajaxCaller(class DataTable extends Component {
 
     const theseColumnWidths = columnWidths[entityType] || {}
     const columnSettings = applyColumnSettings(columnState[entityType] || [], entityMetadata[entityType].attributeNames)
-    const nameWidth = theseColumnWidths['name'] || 150
+    const nameWidth = theseColumnWidths['name'] ||
+      entityType === 'cohort' ? 265 : 150
 
     const resetScroll = () => this.table.current.scrollToTop()
 
@@ -139,7 +140,12 @@ export default ajaxCaller(class DataTable extends Component {
                         h(HeaderCell, [`${entityType}_id`])
                       ])
                     ]),
-                    cellRenderer: ({ rowIndex }) => renderDataCell(entities[rowIndex].name, namespace)
+                    cellRenderer: ({ rowIndex }) => {
+                      const dataCell = renderDataCell(entities[rowIndex].name, namespace)
+                      return entityType === 'cohort' ?
+                        div([dataCell, buttonPrimary({}, 'Open in Data Explorer')])
+                      : dataCell
+                    }
                   },
                   ..._.map(({ name }) => {
                     const thisWidth = theseColumnWidths[name] || 300
