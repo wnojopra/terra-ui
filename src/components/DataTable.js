@@ -142,9 +142,13 @@ export default ajaxCaller(class DataTable extends Component {
                     ]),
                     cellRenderer: ({ rowIndex }) => {
                       const dataCell = renderDataCell(entities[rowIndex].name, namespace)
-                      return entityType === 'cohort' ?
-                        div([dataCell, buttonPrimary({}, 'Open in Data Explorer')])
-                      : dataCell
+                      return entityType === 'cohort' && Object.keys(entities[rowIndex].attributes).includes("data_explorer_url") ?
+                        div([dataCell, buttonPrimary({
+                          as: 'a',
+                          href: entities[rowIndex].attributes.data_explorer_url,
+                          target: '_blank'
+                        }, 'Open in Data Explorer')])
+                        : dataCell
                     }
                   },
                   ..._.map(({ name }) => {
