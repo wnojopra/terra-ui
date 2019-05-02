@@ -15,6 +15,7 @@ import colors from 'src/libs/colors'
 import { reportError } from 'src/libs/error'
 import * as Utils from 'src/libs/utils'
 import { Component } from 'src/libs/wrapped-components'
+import { DicomViewer } from 'src/components/DicomViewer'
 
 
 const els = {
@@ -43,6 +44,8 @@ const isFilePreviewable = ({ size, ...metadata }) => {
 }
 
 const isGs = uri => _.startsWith('gs://', uri)
+
+const isDicom = uri => _.endsWith('.dcm', uri)
 
 const parseUri = uri => _.drop(1, /gs:[/][/]([^/]+)[/](.+)/.exec(uri))
 const getMaxDownloadCostNA = bytes => {
@@ -132,6 +135,10 @@ const UriViewer = ajaxCaller(class UriViewer extends Component {
                 )
               ])],
               [isImage(metadata), () => els.label('Image is too large to preview')],
+              [isDicom(uri), () => h(Fragment, [
+                els.label('This is a dicom file'),
+                h(DicomViewer, { uri: uri })
+              ])],
               () => els.label(`File can't be previewed.`)
             )
           ]),

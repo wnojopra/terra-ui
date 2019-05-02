@@ -6,6 +6,8 @@ import { Ajax } from 'src/libs/ajax'
 import { div } from 'react-hyperscript-helpers'
 import igv from 'igv/dist/igv.js'
 
+//import { } from 'src/libs/auth'
+
 const igvStyle = {
   paddingTop: '10px',
   paddingBottom: '10px',
@@ -47,6 +49,8 @@ export class IGVBrowser extends Component {
         genome: refGenome,
         tracks: tracks
       }
+    console.log('ajax user token:', Ajax().User.token())
+    console.log('User token:', )
     igv.setGoogleOauthToken(Ajax().User.token())
     igv.createBrowser(this.containerRef.current, myOptions)
   }

@@ -42,7 +42,11 @@
     "remove-markdown": "^0.3.0",
     "uuid": "^3.3.2",
     "validate.js": "^0.12.0",
-    "igv": "2.2.8"
+    "igv": "2.2.8",
+    "dicom-parser": "1.8.3",
+    "cornerstone-core": "2.2.8",
+    "cornerstone-tools": "3.7.1",
+    "cornerstone-wado-image-loader": "2.2.3"
   },
   "scripts": {
     "analyze": "npm run build; source-map-explorer build/static/js/main.*",
