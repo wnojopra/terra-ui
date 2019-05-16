@@ -5,6 +5,7 @@ import Modal from 'src/components/Modal'
 import { buttonPrimary, LabeledCheckbox, Clickable, linkButton, Select } from 'src/components/common'
 import * as Utils from 'src/libs/utils'
 import { AutoSizer, List } from 'react-virtualized'
+import { ajaxCaller } from 'src/libs/ajax'
 
 const styles = {
   columnName: {
@@ -24,12 +25,20 @@ const getStrings = v => {
 
 const MAX_CONCURRENT_IGV_FILES = 10
 
-export class IGVFileSelector extends Component {
+const isGs = uri => _.startsWith('gs://', uri)
+
+const parseUri = uri => _.drop(1, /gs:[/][/]([^/]+)[/](.+)/.exec(uri))
+const googleProject = 'general-dev-billing-account'
+
+const IGVFileSelector = ajaxCaller(class IGVFileSelector extends Component {
+//export class IGVFileSelector extends Component {
   constructor(props) {
     super(props)
     this.state = {
       selectedFiles: _.fromPairs(_.map(v => [v, false], this.getIGVFileList())),
-      refGenome: 'hg38'
+      refGenome: 'hg38',
+      inPreFlightCheck: false,
+      loadingError: undefined
     }
   }
 
@@ -63,18 +72,54 @@ export class IGVFileSelector extends Component {
     this.setState({ 'selectedFiles': _.fromPairs(_.map(v => [v, value], this.getIGVFileList())) })
   }
 
+  async preFlightCheck(selectedFiles) {
+    // For each selected file
+    // Do a fetch. Check its status code.
+    // Fetch the index. Check its status code.
+    // If all status codes are 200, good to go.
+    this.setState({ inPreFlightCheck: true })
+    const { ajax: { Buckets, Martha } } = this.props
+    try {
+      await Promise.all(_.map(async uri => {
+        const isGsUri = isGs(uri)
+        const [bucket, name] = isGsUri ? parseUri(uri) : []
+        const { ...metadata } = isGsUri ? await Buckets.getObject(bucket, name, googleProject) : await Martha.call(uri)
+        console.log(metadata)
+        if (isGsUri) {
+          //const signedUrl = (await Martha.call(uri)).signedUrl
+          //console.log('signedUrl: ', signedUrl)
+          console.log('Martha', (await Martha.call(uri)))
+        }
+      }, selectedFiles))
+    } catch (e) {
+      this.setState({ loadingError: await e.json(), inPreFlightCheck: false })
+      return false
+    }
+    return true
+  }
+
+  renderError() {
+    const { loadingError } = this.state
+    return div({}, [JSON.stringify(loadingError, null, 2)])
+  }
+
   render() {
     const { onDismiss, onSuccess } = this.props
-    const { selectedFiles, refGenome } = this.state
+    const { selectedFiles, refGenome, inPreFlightCheck, loadingError } = this.state
     const trackFiles = this.getIGVFileList()
     return h(Modal, {
       onDismiss,
       title: 'Open files with IGV',
       okButton: buttonPrimary({
-        disabled: this.buttonIsDisabled(),
+        disabled: this.buttonIsDisabled() || inPreFlightCheck,
         tooltip: this.buttonIsDisabled() ? `Select between 1 and ${MAX_CONCURRENT_IGV_FILES} files` : '',
-        onClick: () => onSuccess({ selectedFiles: this.getSelectedFilesList(), refGenome })
-      }, ['Done'])
+        onClick: async () => {
+          const a = await this.preFlightCheck(this.getSelectedFilesList())
+          if (a) {
+            onSuccess({ selectedFiles: this.getSelectedFilesList(), refGenome })
+          }
+        }
+      }, [inPreFlightCheck ? 'Thinking...' : 'Open in IGV'])
     }, [
       div({ style: { marginBottom: '1rem', display: 'flex' } }, [
         div({ style: { fontWeight: 500 } }, ['Select:']),
@@ -82,32 +127,34 @@ export class IGVFileSelector extends Component {
         '|',
         linkButton({ style: { padding: '0 0.5rem' }, onClick: () => this.setAll(false) }, ['none'])
       ]),
-      h(AutoSizer, { disableHeight: true }, [
-        ({ width }) => {
-          return h(List, {
-            width, height: 400,
-            rowCount: trackFiles.length,
-            rowHeight: 30,
-            noRowsRenderer: () => 'No valid files found',
-            rowRenderer: ({ index, style, key }) => {
-              const name = trackFiles[index]
-              return div({ key, index, style: { ...style, display: 'flex' } }, [
-                div({ style: { display: 'flex', alignItems: 'center' } }, [
-                  h(LabeledCheckbox, {
-                    checked: selectedFiles[name],
-                    onChange: () => this.toggleVisibility(name)
-                  })
-                ]),
-                h(Clickable, {
-                  style: styles.columnName,
-                  title: name,
-                  onClick: () => this.toggleVisibility(name)
-                }, [_.last(name.split('/'))])
-              ])
-            }
-          })
-        }
-      ]),
+      loadingError ?
+        this.renderError():
+        h(AutoSizer, { disableHeight: true }, [
+          ({ width }) => {
+            return h(List, {
+              width, height: 400,
+              rowCount: trackFiles.length,
+              rowHeight: 30,
+              noRowsRenderer: () => 'No valid files found',
+              rowRenderer: ({ index, style, key }) => {
+                const name = trackFiles[index]
+                return div({ key, index, style: { ...style, display: 'flex' } }, [
+                  div({ style: { display: 'flex', alignItems: 'center' } }, [
+                    h(LabeledCheckbox, {
+                      checked: selectedFiles[name],
+                      onChange: () => this.toggleVisibility(name)
+                    })
+                  ]),
+                  h(Clickable, {
+                    style: styles.columnName,
+                    title: name,
+                    onClick: () => this.toggleVisibility(name)
+                  }, [_.last(name.split('/'))])
+                ])
+              }
+            })
+          }
+        ]),
       div({ style: { fontWeight: 500 } }, [
         'Reference genome: ',
         div({ style: { display: 'inline-block', marginLeft: '0.25rem', minWidth: 125 } }, [
@@ -121,4 +168,6 @@ export class IGVFileSelector extends Component {
       ])
     ])
   }
-}
+})
+
+export default IGVFileSelector
